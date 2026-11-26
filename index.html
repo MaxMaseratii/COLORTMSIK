@@ -62,6 +62,12 @@
       margin-top: 4px;
     }
 
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .btn-secondary {
       background: var(--bg-card);
       color: var(--text-main);
@@ -467,3 +473,348 @@
       border-top: 1px solid rgba(255, 255, 255, 0.12);
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(244, 244, 245, 0.65);
+    }
+
+    .css-output {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      color: #E4E4E7;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .empty-state {
+      color: var(--text-muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div>
+        <h1>Color & Gradient Design Studio</h1>
+        <p>Build multi-stop gradients and preview them on a sample surface</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary" id="resetBtn">Reset</button>
+        <button class="btn-primary" id="copyCssBtn">Copy CSS</button>
+      </div>
+    </header>
+
+    <div class="top-grid">
+      <!-- Left: Controls -->
+      <div class="panel">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Color Stops</div>
+            <div class="section-subtitle">Add colors and adjust opacity</div>
+          </div>
+          <div class="add-controls">
+            <input type="color" id="newColor" value="#8C735B" />
+            <input type="text" class="hex-input" id="newHex" value="#8C735B" maxlength="7" />
+            <button class="btn-primary" id="addColorBtn">Add</button>
+          </div>
+        </div>
+
+        <div class="slots-grid" id="slotsGrid"></div>
+
+        <div class="two-col-row">
+          <div>
+            <div class="section-title">Gradient Type</div>
+            <div class="pattern-grid" id="patternGrid"></div>
+          </div>
+          <div>
+            <div class="section-title">Ribbon Overlay</div>
+            <div class="ribbon-grid" id="ribbonGrid"></div>
+            <div class="mini-sliders">
+              <span>Intensity</span>
+              <input type="range" id="ribbonIntensity" min="0" max="100" value="40" />
+              <span id="ribbonIntensityVal">40%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Preview -->
+      <div class="panel">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Live Preview</div>
+            <div class="section-subtitle">Surface card with your gradient</div>
+          </div>
+        </div>
+        <div class="preview-canvas" id="previewCanvas">
+          <div class="ribbon-layer" id="ribbonLayer"></div>
+          <div class="surface-card" id="surfaceCard">
+            <div class="surface-card-top">
+              <span>Preview</span>
+              <div class="status-dot"></div>
+            </div>
+            <h3>Design Surface</h3>
+            <p>Your multi-stop gradient applied to a card. Adjust stops, type, and ribbon to refine the look.</p>
+            <div class="surface-card-footer">
+              <span id="stopCount">0 stops</span>
+              <span id="gradientTypeLabel">Linear</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-title" style="margin-bottom: 8px;">Generated CSS</div>
+          <div class="css-output" id="cssOutput">/* Add colors to generate CSS */</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const patterns = [
+      { id: 'linear-135', label: 'Linear 135°', type: 'linear-gradient', angle: '135deg' },
+      { id: 'linear-90', label: 'Linear 90°', type: 'linear-gradient', angle: '90deg' },
+      { id: 'linear-45', label: 'Linear 45°', type: 'linear-gradient', angle: '45deg' },
+      { id: 'radial', label: 'Radial', type: 'radial-gradient', angle: 'circle' },
+      { id: 'conic', label: 'Conic', type: 'conic-gradient', angle: 'from 0deg' },
+      { id: 'linear-180', label: 'Linear 180°', type: 'linear-gradient', angle: '180deg' }
+    ];
+
+    const ribbons = [
+      { id: 'none', label: 'None' },
+      { id: 'diagonal', label: 'Diagonal' },
+      { id: 'horizontal', label: 'Horizontal' },
+      { id: 'dots', label: 'Dots' },
+      { id: 'grid', label: 'Grid' },
+      { id: 'waves', label: 'Waves' }
+    ];
+
+    let colors = [
+      { hex: '#8C735B', alpha: 100 },
+      { hex: '#3F3F46', alpha: 100 },
+      { hex: '#18181B', alpha: 90 }
+    ];
+    let activePattern = patterns[0];
+    let activeRibbon = ribbons[0];
+    let ribbonIntensity = 40;
+
+    const slotsGrid = document.getElementById('slotsGrid');
+    const patternGrid = document.getElementById('patternGrid');
+    const ribbonGrid = document.getElementById('ribbonGrid');
+    const ribbonLayer = document.getElementById('ribbonLayer');
+    const surfaceCard = document.getElementById('surfaceCard');
+    const cssOutput = document.getElementById('cssOutput');
+    const stopCount = document.getElementById('stopCount');
+    const gradientTypeLabel = document.getElementById('gradientTypeLabel');
+    const newColor = document.getElementById('newColor');
+    const newHex = document.getElementById('newHex');
+    const ribbonIntensityInput = document.getElementById('ribbonIntensity');
+    const ribbonIntensityVal = document.getElementById('ribbonIntensityVal');
+
+    function hexToRgba(hex, alpha) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${(alpha / 100).toFixed(2)})`;
+    }
+
+    function renderSlots() {
+      slotsGrid.innerHTML = colors.length === 0
+        ? '<div class="empty-state">No color stops yet. Add one above.</div>'
+        : '';
+
+      colors.forEach((c, i) => {
+        const item = document.createElement('div');
+        item.className = 'slot-item';
+        item.innerHTML = `
+          <div class="slot-swatch" style="background:${c.hex}"></div>
+          <div class="slot-hex">${c.hex}</div>
+          <input type="range" class="slot-slider" min="0" max="100" value="${c.alpha}" data-index="${i}" />
+          <div class="slot-alpha">${c.alpha}%</div>
+          <div class="slot-actions">
+            <button class="icon-btn" data-action="up" data-index="${i}" title="Move up">↑</button>
+            <button class="icon-btn" data-action="down" data-index="${i}" title="Move down">↓</button>
+            <button class="icon-btn danger" data-action="remove" data-index="${i}" title="Remove">×</button>
+          </div>
+        `;
+        slotsGrid.appendChild(item);
+      });
+
+      slotsGrid.querySelectorAll('.slot-slider').forEach(slider => {
+        slider.addEventListener('input', (e) => {
+          const idx = +e.target.dataset.index;
+          colors[idx].alpha = +e.target.value;
+          e.target.nextElementSibling.textContent = colors[idx].alpha + '%';
+          updatePreview();
+        });
+      });
+
+      slotsGrid.querySelectorAll('.icon-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = +e.target.dataset.index;
+          const action = e.target.dataset.action;
+          if (action === 'remove') {
+            colors.splice(idx, 1);
+          } else if (action === 'up' && idx > 0) {
+            [colors[idx - 1], colors[idx]] = [colors[idx], colors[idx - 1]];
+          } else if (action === 'down' && idx < colors.length - 1) {
+            [colors[idx], colors[idx + 1]] = [colors[idx + 1], colors[idx]];
+          }
+          renderSlots();
+          updatePreview();
+        });
+      });
+    }
+
+    function renderPatterns() {
+      patternGrid.innerHTML = '';
+      patterns.forEach(p => {
+        const btn = document.createElement('button');
+        btn.className = 'ticker-btn' + (p.id === activePattern.id ? ' active' : '');
+        btn.innerHTML = `<span class="ticker-check">${p.id === activePattern.id ? '✓' : ''}</span>${p.label}`;
+        btn.addEventListener('click', () => {
+          activePattern = p;
+          renderPatterns();
+          updatePreview();
+        });
+        patternGrid.appendChild(btn);
+      });
+    }
+
+    function renderRibbons() {
+      ribbonGrid.innerHTML = '';
+      ribbons.forEach(r => {
+        const btn = document.createElement('button');
+        btn.className = 'ribbon-btn' + (r.id === activeRibbon.id ? ' active' : '');
+        btn.textContent = r.label;
+        btn.addEventListener('click', () => {
+          activeRibbon = r;
+          renderRibbons();
+          updatePreview();
+        });
+        ribbonGrid.appendChild(btn);
+      });
+    }
+
+    function getGradientCss() {
+      if (colors.length === 0) return 'transparent';
+      const stops = colors.map((c, i) => {
+        const pos = colors.length === 1 ? '0%' : `${(i / (colors.length - 1)) * 100}%`;
+        return `${hexToRgba(c.hex, c.alpha)} ${pos}`;
+      }).join(', ');
+
+      if (activePattern.type === 'linear-gradient') {
+        return `linear-gradient(${activePattern.angle}, ${stops})`;
+      } else if (activePattern.type === 'radial-gradient') {
+        return `radial-gradient(${activePattern.angle}, ${stops})`;
+      } else {
+        return `conic-gradient(${activePattern.angle}, ${stops})`;
+      }
+    }
+
+    function getRibbonBackground() {
+      const intensity = ribbonIntensity / 100;
+      const base = colors[0] ? hexToRgba(colors[0].hex, Math.round(intensity * 60)) : 'rgba(140,115,91,0.3)';
+      switch (activeRibbon.id) {
+        case 'diagonal':
+          return `repeating-linear-gradient(45deg, transparent, transparent 8px, ${base} 8px, ${base} 9px)`;
+        case 'horizontal':
+          return `repeating-linear-gradient(0deg, transparent, transparent 6px, ${base} 6px, ${base} 7px)`;
+        case 'dots':
+          return `radial-gradient(circle, ${base} 1px, transparent 1.5px)`;
+        case 'grid':
+          return `linear-gradient(${base} 1px, transparent 1px), linear-gradient(90deg, ${base} 1px, transparent 1px)`;
+        case 'waves':
+          return `repeating-radial-gradient(circle at 0 0, transparent 0, ${base} 8px, transparent 16px)`;
+        default:
+          return 'transparent';
+      }
+    }
+
+    function updatePreview() {
+      const gradient = getGradientCss();
+      surfaceCard.style.background = gradient;
+      surfaceCard.style.boxShadow = '0 8px 32px rgba(0,0,0,0.4)';
+
+      ribbonLayer.style.background = getRibbonBackground();
+      if (activeRibbon.id === 'dots' || activeRibbon.id === 'grid') {
+        ribbonLayer.style.backgroundSize = '12px 12px';
+      } else {
+        ribbonLayer.style.backgroundSize = '';
+      }
+
+      stopCount.textContent = colors.length + ' stop' + (colors.length !== 1 ? 's' : '');
+      gradientTypeLabel.textContent = activePattern.label;
+
+      const css = `.surface {\n  background: ${gradient};\n}`;
+      cssOutput.textContent = colors.length ? css : '/* Add colors to generate CSS */';
+    }
+
+    document.getElementById('addColorBtn').addEventListener('click', () => {
+      let hex = newHex.value.trim();
+      if (!hex.startsWith('#')) hex = '#' + hex;
+      if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) hex = newColor.value;
+      colors.push({ hex: hex.toUpperCase(), alpha: 100 });
+      renderSlots();
+      updatePreview();
+    });
+
+    newColor.addEventListener('input', () => {
+      newHex.value = newColor.value.toUpperCase();
+    });
+
+    newHex.addEventListener('input', () => {
+      let v = newHex.value.trim();
+      if (!v.startsWith('#')) v = '#' + v;
+      if (/^#[0-9A-Fa-f]{6}$/.test(v)) newColor.value = v;
+    });
+
+    ribbonIntensityInput.addEventListener('input', () => {
+      ribbonIntensity = +ribbonIntensityInput.value;
+      ribbonIntensityVal.textContent = ribbonIntensity + '%';
+      updatePreview();
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      colors = [
+        { hex: '#8C735B', alpha: 100 },
+        { hex: '#3F3F46', alpha: 100 },
+        { hex: '#18181B', alpha: 90 }
+      ];
+      activePattern = patterns[0];
+      activeRibbon = ribbons[0];
+      ribbonIntensity = 40;
+      ribbonIntensityInput.value = 40;
+      ribbonIntensityVal.textContent = '40%';
+      renderSlots();
+      renderPatterns();
+      renderRibbons();
+      updatePreview();
+    });
+
+    document.getElementById('copyCssBtn').addEventListener('click', () => {
+      const text = cssOutput.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyCssBtn');
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = orig, 1500);
+      });
+    });
+
+    // Init
+    renderSlots();
+    renderPatterns();
+    renderRibbons();
+    updatePreview();
+  </script>
+</body>
+</html>
