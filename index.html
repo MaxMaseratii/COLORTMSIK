@@ -135,6 +135,32 @@
             </div>
           </div>
         </div>
+
+        <!-- Text Style Controls -->
+        <div class="space-y-3 pt-3 border-t border-zinc-800/80">
+          <label class="text-xs font-medium text-zinc-400 block">Text Style</label>
+          <div class="grid grid-cols-2 gap-2">
+            <select id="fontFamilySelect" class="px-2.5 py-1.5 text-xs bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-200 focus:outline-none">
+              <option value="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif">System</option>
+              <option value="Georgia, &quot;Times New Roman&quot;, serif">Serif</option>
+              <option value="&quot;SF Mono&quot;, Monaco, Consolas, monospace">Mono</option>
+              <option value="Inter, system-ui, sans-serif">Inter</option>
+              <option value="&quot;Playfair Display&quot;, Georgia, serif">Playfair</option>
+            </select>
+            <select id="fontWeightSelect" class="px-2.5 py-1.5 text-xs bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-200 focus:outline-none">
+              <option value="400">Regular</option>
+              <option value="500">Medium</option>
+              <option value="600">Semibold</option>
+              <option value="700">Bold</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[11px] text-zinc-400">Size <span id="fontSizeVal">16</span>px</span>
+            <input type="range" id="fontSizeSlider" min="12" max="48" value="16" class="w-full h-1 bg-zinc-700 rounded-lg cursor-pointer" />
+            <span class="text-[11px] text-zinc-400">Tracking <span id="trackingVal">0</span></span>
+            <input type="range" id="trackingSlider" min="-2" max="8" value="0" class="w-full h-1 bg-zinc-700 rounded-lg cursor-pointer" />
+          </div>
+        </div>
       </div>
 
       <!-- Preview + mode switcher -->
@@ -142,7 +168,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div class="text-sm font-medium text-white">Live Surface Preview</div>
-            <div class="text-xs text-zinc-400">Switch modes to see the same palette on different UI patterns</div>
+            <div class="text-xs text-zinc-400">Switch modes to see the same palette on different UI patterns. Click text to edit.</div>
           </div>
           <div class="flex gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
             <button data-mode="surface" class="preview-mode-btn px-2.5 py-1 rounded text-[11px] border border-transparent">Surface</button>
@@ -217,7 +243,7 @@
           <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4">
             <div class="text-[11px] text-zinc-400 mb-2">Card Element</div>
             <div id="mockCard" class="rounded-lg p-3 border border-zinc-700/80">
-              <span class="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-zinc-800 text-zinc-200">Studio Badge</span>
+              <span contenteditable="true" id="mockBadge" class="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-zinc-800 text-zinc-200 outline-none">Studio Badge</span>
             </div>
           </div>
           <div class="space-y-3">
@@ -288,6 +314,23 @@
     let baseColor = '#3B82F6';
     let textMode = 'auto';
     let previewMode = 'surface';
+    let fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    let fontWeight = '400';
+    let fontSize = 16;
+    let letterSpacing = 0;
+    let previewTexts = {
+      heroTitle: 'Hero Headline',
+      heroSub: 'Subtitle that shows how body text looks on this surface.',
+      heroCta: 'Primary CTA',
+      cardLabel: 'Label',
+      cardTitle: 'Card Title',
+      cardBody: 'Supporting text on the surface.',
+      navLogo: 'Logo',
+      nav1: 'Home',
+      nav2: 'Work',
+      nav3: 'About',
+      badge: 'Studio Badge'
+    };
     let history = JSON.parse(localStorage.getItem('colorStudioHistory') || '[]');
 
     const stopsContainer = document.getElementById('stopsContainer');
@@ -334,7 +377,6 @@
       return ((lighter + 0.05) / (darker + 0.05)).toFixed(1);
     }
     function generateShades(base) {
-      // Tailwind-like 0-9 (darker to lighter, better mixing)
       const {r,g,b} = hexToRgb(base);
       const shades = [];
       for (let i = 0; i < 10; i++) {
@@ -350,7 +392,7 @@
     }
 
     function getState() {
-      return { stops, angle, baseColor, surfaceFinish, activePattern: activePattern.id, activeRibbon: activeRibbon.id, canvasBg, blur, tint, textMode, previewMode };
+      return { stops, angle, baseColor, surfaceFinish, activePattern: activePattern.id, activeRibbon: activeRibbon.id, canvasBg, blur, tint, textMode, previewMode, fontFamily, fontWeight, fontSize, letterSpacing, previewTexts };
     }
     function applyState(s) {
       if (s.stops) stops = s.stops.map(x => ({...x}));
@@ -364,6 +406,11 @@
       if (s.tint != null) tint = s.tint;
       if (s.textMode) textMode = s.textMode;
       if (s.previewMode) previewMode = s.previewMode;
+      if (s.fontFamily) fontFamily = s.fontFamily;
+      if (s.fontWeight) fontWeight = s.fontWeight;
+      if (s.fontSize != null) fontSize = s.fontSize;
+      if (s.letterSpacing != null) letterSpacing = s.letterSpacing;
+      if (s.previewTexts) previewTexts = {...previewTexts, ...s.previewTexts};
       document.getElementById('angleSlider').value = angle;
       document.getElementById('canvasBgPicker').value = canvasBg;
       document.getElementById('baseColorPicker').value = baseColor;
@@ -371,10 +418,16 @@
       document.getElementById('surfaceFinishSelect').value = surfaceFinish;
       document.getElementById('blurSlider').value = blur;
       document.getElementById('tintSlider').value = tint;
+      document.getElementById('fontFamilySelect').value = fontFamily;
+      document.getElementById('fontWeightSelect').value = fontWeight;
+      document.getElementById('fontSizeSlider').value = fontSize;
+      document.getElementById('trackingSlider').value = letterSpacing;
       angleValue.textContent = angle + '°';
       canvasBgLabel.textContent = canvasBg.toUpperCase();
       blurVal.textContent = blur;
       tintVal.textContent = tint;
+      document.getElementById('fontSizeVal').textContent = fontSize;
+      document.getElementById('trackingVal').textContent = letterSpacing;
       document.querySelectorAll('.text-mode-btn').forEach(b => {
         b.className = 'text-mode-btn px-3 py-1 rounded-lg text-xs text-zinc-300 hover:bg-zinc-800';
         if (b.dataset.text === textMode) b.className = 'text-mode-btn px-3 py-1 rounded-lg text-xs bg-blue-600 text-white';
@@ -396,7 +449,7 @@
     function updateHash() {
       const s = getState();
       const hash = btoa(unescape(encodeURIComponent(JSON.stringify({
-        st: s.stops, a: s.angle, b: s.baseColor, f: s.surfaceFinish, p: s.activePattern, r: s.activeRibbon, c: s.canvasBg, bl: s.blur, t: s.tint, tm: s.textMode, pm: s.previewMode
+        st: s.stops, a: s.angle, b: s.baseColor, f: s.surfaceFinish, p: s.activePattern, r: s.activeRibbon, c: s.canvasBg, bl: s.blur, t: s.tint, tm: s.textMode, pm: s.previewMode, ff: s.fontFamily, fw: s.fontWeight, fs: s.fontSize, ls: s.letterSpacing, pt: s.previewTexts
       }))));
       history.replaceState(null, '', '#' + hash);
     }
@@ -407,7 +460,8 @@
         applyState({
           stops: data.st, angle: data.a, baseColor: data.b, surfaceFinish: data.f,
           activePattern: data.p, activeRibbon: data.r, canvasBg: data.c, blur: data.bl, tint: data.t,
-          textMode: data.tm, previewMode: data.pm
+          textMode: data.tm, previewMode: data.pm, fontFamily: data.ff, fontWeight: data.fw,
+          fontSize: data.fs, letterSpacing: data.ls, previewTexts: data.pt
         });
         return true;
       } catch(e) { return false; }
@@ -568,20 +622,45 @@
       progressBar.style.background = baseColor;
     }
     function updateComponentPreview() {
-      const grad = getGradientCss();
-      let html = '';
       const textCol = textMode === 'white' ? '#fff' : textMode === 'black' ? '#000' : (luminance(baseColor)>0.5?'#000':'#fff');
+      const style = `font-family:${fontFamily};font-weight:${fontWeight};font-size:${fontSize}px;letter-spacing:${letterSpacing}px;color:${textCol};`;
+      let html = '';
       if (previewMode === 'hero') {
-        html = `<div class="text-center max-w-md"><h2 class="text-2xl font-semibold mb-2" style="color:${textCol}">Hero Headline</h2><p class="text-sm opacity-80 mb-4" style="color:${textCol}">Subtitle that shows how body text looks on this surface.</p><button class="px-4 py-2 rounded-lg text-xs font-medium" style="background:${baseColor};color:${luminance(baseColor)>0.5?'#000':'#fff'}">Primary CTA</button></div>`;
+        html = `<div class="text-center max-w-md" style="${style}">
+          <div contenteditable="true" class="text-2xl mb-2 outline-none" data-key="heroTitle">${previewTexts.heroTitle}</div>
+          <div contenteditable="true" class="text-sm opacity-80 mb-4 outline-none" data-key="heroSub">${previewTexts.heroSub}</div>
+          <button contenteditable="true" class="px-4 py-2 rounded-lg text-xs font-medium outline-none" style="background:${baseColor};color:${luminance(baseColor)>0.5?'#000':'#fff'}" data-key="heroCta">${previewTexts.heroCta}</button>
+        </div>`;
       } else if (previewMode === 'card') {
-        html = `<div class="bg-black/20 backdrop-blur rounded-xl p-4 max-w-xs border border-white/10"><div class="text-[10px] uppercase tracking-wider mb-1 opacity-70" style="color:${textCol}">Label</div><div class="font-medium mb-1" style="color:${textCol}">Card Title</div><div class="text-xs opacity-80" style="color:${textCol}">Supporting text on the surface.</div></div>`;
+        html = `<div class="bg-black/20 backdrop-blur rounded-xl p-4 max-w-xs border border-white/10" style="${style}">
+          <div contenteditable="true" class="text-[10px] uppercase tracking-wider mb-1 opacity-70 outline-none" data-key="cardLabel">${previewTexts.cardLabel}</div>
+          <div contenteditable="true" class="font-medium mb-1 outline-none" data-key="cardTitle">${previewTexts.cardTitle}</div>
+          <div contenteditable="true" class="text-xs opacity-80 outline-none" data-key="cardBody">${previewTexts.cardBody}</div>
+        </div>`;
       } else if (previewMode === 'nav') {
-        html = `<div class="absolute top-4 left-4 right-4 flex items-center justify-between px-4 py-2 rounded-lg bg-black/30 backdrop-blur border border-white/10"><span class="text-sm font-medium" style="color:${textCol}">Logo</span><div class="flex gap-3 text-xs" style="color:${textCol}"><span>Home</span><span>Work</span><span>About</span></div></div>`;
+        html = `<div class="absolute top-4 left-4 right-4 flex items-center justify-between px-4 py-2 rounded-lg bg-black/30 backdrop-blur border border-white/10" style="${style}">
+          <span contenteditable="true" class="text-sm font-medium outline-none" data-key="navLogo">${previewTexts.navLogo}</span>
+          <div class="flex gap-3 text-xs">
+            <span contenteditable="true" class="outline-none" data-key="nav1">${previewTexts.nav1}</span>
+            <span contenteditable="true" class="outline-none" data-key="nav2">${previewTexts.nav2}</span>
+            <span contenteditable="true" class="outline-none" data-key="nav3">${previewTexts.nav3}</span>
+          </div>
+        </div>`;
       } else if (previewMode === 'buttons') {
         html = `<div class="flex flex-wrap gap-2 justify-center">${buttonVariants.innerHTML}</div>`;
       }
       componentPreview.innerHTML = html;
       componentPreview.style.pointerEvents = previewMode === 'surface' ? 'none' : 'auto';
+
+      componentPreview.querySelectorAll('[contenteditable]').forEach(el => {
+        el.oninput = () => {
+          const key = el.dataset.key;
+          if (key && previewTexts.hasOwnProperty(key)) {
+            previewTexts[key] = el.innerText.trim();
+            updateHash();
+          }
+        };
+      });
     }
     function updatePreview() {
       const grad = getGradientCss();
@@ -624,6 +703,10 @@
     document.getElementById('blurSlider').oninput = e => { blur = +e.target.value; blurVal.textContent = blur; updatePreview(); };
     document.getElementById('tintSlider').oninput = e => { tint = +e.target.value; tintVal.textContent = tint; updatePreview(); };
     document.getElementById('surfaceFinishSelect').onchange = e => { surfaceFinish = e.target.value; updatePreview(); };
+    document.getElementById('fontFamilySelect').onchange = e => { fontFamily = e.target.value; updateComponentPreview(); updateHash(); };
+    document.getElementById('fontWeightSelect').onchange = e => { fontWeight = e.target.value; updateComponentPreview(); updateHash(); };
+    document.getElementById('fontSizeSlider').oninput = e => { fontSize = +e.target.value; document.getElementById('fontSizeVal').textContent = fontSize; updateComponentPreview(); updateHash(); };
+    document.getElementById('trackingSlider').oninput = e => { letterSpacing = +e.target.value; document.getElementById('trackingVal').textContent = letterSpacing; updateComponentPreview(); updateHash(); };
     document.getElementById('baseColorPicker').oninput = e => {
       baseColor = e.target.value.toUpperCase();
       document.getElementById('baseColorHex').value = baseColor;
@@ -695,6 +778,10 @@
       localStorage.removeItem('colorStudioHistory');
       renderHistory();
     };
+    document.getElementById('mockBadge')?.addEventListener('input', e => {
+      previewTexts.badge = e.target.innerText.trim();
+      updateHash();
+    });
 
     // Init
     document.querySelector('[data-mode="surface"]').classList.add('active');
