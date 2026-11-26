@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color & Gradient Design Studio</title>
+  <script src="https://tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#0A0A0A',
+            surface: '#121214',
+            panel: '#18181B',
+            border: '#27272A'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0A0A0A;
+      color: #F4F4F5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    input[type="range"] {
+      accent-color: #8C735B;
+    }
+    .checkerboard {
+      background-image: linear-gradient(45deg, #18181b 25%, transparent 25%),
+                        linear-gradient(-45deg, #18181b 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, #18181b 75%),
+                        linear-gradient(-45deg, transparent 75%, #18181b 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 antialiased selection:bg-[#8C735B] selection:text-white">
+  <div class="max-w-6xl mx-auto space-y-8">
+    
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-5">
+      <div>
+        <h1 class="text-xl font-semibold tracking-tight text-white">Color & Gradient Design Studio</h1>
+        <p class="text-xs text-zinc-400 mt-1">Design translucent ribbon sweeps, 10-step shade scales, and live UI surfaces.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="copyAllCssBtn" class="px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-200 transition flex items-center gap-2">
+          <span>Copy Full CSS</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- SECTION 1: GRADIENT COLOR SEQUENCE & LIVE PREVIEW -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Left Controls: Sequence, Patterns, Sweeps, Finishes -->
+      <div class="lg:col-span-7 bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-6">
+        
+        <!-- 10-Slot Sequence Header -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-medium text-white">1. Gradient Color Sequence <span id="slotCounter" class="text-xs text-zinc-400 ml-1">(4/10 slots)</span></h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="color" id="newStopPicker" value="#8C735B" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
+            <input type="text" id="newStopHex" value="#8C735B" maxlength="7" placeholder="#HEX" class="w-24 px-2.5 py-1.5 text-xs bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-200 uppercase focus:outline-none focus:border-zinc-500" />
+            <button id="addStopBtn" class="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold transition">
+              + Add
+            </button>
+          </div>
+        </div>
+
+        <!-- Color Slots List -->
+        <div id="stopsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+
+        <!-- Canvas Background & Orientation Angle -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-zinc-800/80">
+          <div class="flex items-center justify-between bg-zinc-900/70 px-3.5 py-2.5 rounded-xl border border-zinc-800">
+            <span class="text-xs text-zinc-400">Canvas Base</span>
+            <div class="flex items-center gap-2">
+              <span id="canvasBgLabel" class="text-xs font-mono text-zinc-300">#0A0A0A</span>
+              <input type="color" id="canvasBgPicker" value="#0A0A0A" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
+            </div>
+          </div>
+          <div class="flex items-center justify-between gap-3 bg-zinc-900/70 px-3.5 py-2.5 rounded-xl border border-zinc-800">
+            <span class="text-xs text-zinc-400 whitespace-nowrap">Angle: <strong id="angleValue" class="text-zinc-200">135°</strong></span>
+            <input type="range" id="angleSlider" min="0" max="360" value="135" class="w-full h-1.5 bg-zinc-700 rounded-lg cursor-pointer" />
+          </div>
+        </div>
+
+        <!-- Gradient Formula Pattern (Ticker Box Style Selection) -->
+        <div class="space-y-2.5 pt-2">
+          <label class="text-xs font-medium text-zinc-400 block">Gradient Formula Pattern</label>
+          <div id="patternGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+        </div>
+
+        <!-- Translucent Ribbon Sweeps & Surface Finish -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-zinc-800/80">
+          <div class="space-y-2">
+            <label class="text-xs font-medium text-zinc-400 block">Translucent Ribbon Sweeps</label>
+            <div id="ribbonPresets" class="grid grid-cols-2 gap-1.5"></div>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-medium text-zinc-400 block">Minimalistic Surface Finish</label>
+            <select id="surfaceFinishSelect" class="w-full px-3 py-2 text-xs bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-200 focus:outline-none">
+              <option value="glass">Frosted Glass</option>
+              <option value="matte">Matte Dark</option>
+              <option value="acrylic">Glossy Acrylic</option>
+              <option value="neumorphic">Neumorphic Soft</option>
+              <option value="wireframe">Hairline Wireframe</option>
+            </select>
+            <div class="flex items-center gap-3 pt-1">
+              <span class="text-[11px] text-zinc-400">Blur <span id="blurVal">16</span>px</span>
+              <input type="range" id="blurSlider" min="0" max="40" value="16" class="w-full h-1 bg-zinc-700 rounded-lg cursor-pointer" />
+              <span class="text-[11px] text-zinc-400">Tint <span id="tintVal">18</span>%</span>
+              <input type="range" id="tintSlider" min="0" max="80" value="18" class="w-full h-1 bg-zinc-700 rounded-lg cursor-pointer" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Canvas: Live Gradient & Minimalistic Surface Preview -->
+      <div class="lg:col-span-5 flex flex-col gap-4">
+        <div id="gradientCanvas" class="relative w-full h-80 lg:h-full min-h-[340px] rounded-2xl border border-zinc-800 overflow-hidden flex items-center justify-center p-6 transition-all duration-300 checkerboard">
+          <!-- Ribbon Sweep Accent Layer -->
+          <div id="ribbonLayer" class="absolute inset-0 pointer-events-none transition-all duration-500"></div>
+          
+          <!-- Minimalistic Surface Overlay Card -->
+          <div id="surfaceCard" class="relative z-10 w-full max-w-xs rounded-2xl p-5 transition-all duration-300">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300/80" id="surfaceBadge">Frosted Glass</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400/80"></span>
+            </div>
+            <h3 class="text-base font-medium text-white">Translucent Surface</h3>
+            <p class="text-xs text-zinc-300/80 mt-1 leading-relaxed">
+              Live interaction between background ribbon sweeps, opacity stops, and surface blur.
+            </p>
+            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-zinc-300/70">
+              <span id="liveFormulaTag">conic-gradient</span>
+              <button id="copyGradientCssBtn" class="text-white underline hover:text-zinc-200">Copy CSS</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: BASE COLOR & 5x6 PRESETS (30 COLORS) -->
+    <section class="bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-medium text-white">2. Base Color & Studio Presets</h2>
+          <p class="text-xs text-zinc-400">Select any preset or custom base color to generate a 10-step tint-to-shade scale.</p>
+        </div>
+        <div class="flex items-center gap-2.5 bg-zinc-900 px-3 py-1.5 rounded-xl border border-zinc-800">
+          <span class="text-xs text-zinc-400">Base</span>
+          <input type="color" id="baseColorPicker" value="#8C735B" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
+          <input type="text" id="baseColorHex" value="#8C735B" maxlength="7" class="w-20 text-xs font-mono bg-transparent text-white uppercase focus:outline-none" />
+        </div>
+      </div>
+
+      <!-- 5 Rows x 6 Columns = 30 Preset Pills -->
+      <div id="presetGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2"></div>
+    </section>
+
+    <!-- SECTION 3: INTERACTIVE 0-9 TINT-TO-SHADE SCALE & COMPONENT VARIANTS -->
+    <section class="bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-medium text-white">3. Interactive Tint-to-Shade Scale (0–9) & UI Component Preview</h2>
+          <p class="text-xs text-zinc-400">Click any shade step to inspect its values, push it to the gradient sequence, or preview UI variants.</p>
+        </div>
+
+        <!-- Component Text Color Selector -->
+        <div class="flex flex-wrap items-center gap-2 bg-zinc-900 p-1.5 rounded-xl border border-zinc-800">
+          <span class="text-xs text-zinc-400 px-2">Text Color:</span>
