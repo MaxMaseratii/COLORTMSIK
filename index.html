@@ -22,7 +22,6 @@
   </script>
   <style>
     body { background-color: #0A0A0A; color: #F4F4F5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    input[type="range"] { accent-color: #8C735B; }
     .checkerboard {
       background-image: linear-gradient(45deg, #18181b 25%, transparent 25%),
                         linear-gradient(-45deg, #18181b 25%, transparent 25%),
@@ -32,25 +31,52 @@
       background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
     }
     .preset-pill { transition: transform 0.12s, box-shadow 0.12s; }
-    .preset-pill:hover { transform: scale(1.04); }
+    .preset-pill:hover { transform: scale(1.05); }
     .shade-step { cursor: pointer; transition: transform 0.1s; }
-    .shade-step:hover { transform: scale(1.08); }
+    .shade-step:hover { transform: scale(1.06); }
     .toggle { position: relative; display: inline-block; width: 36px; height: 20px; }
     .toggle input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #3F3F46; transition: .2s; border-radius: 20px; }
     .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background: white; transition: .2s; border-radius: 50%; }
     input:checked + .slider { background: #8C735B; }
     input:checked + .slider:before { transform: translateX(16px); }
+    /* Colored range sliders */
+    input[type="range"].color-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 999px;
+      background: #3F3F46;
+      outline: none;
+    }
+    input[type="range"].color-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--thumb, #8C735B);
+      cursor: pointer;
+      border: 2px solid #fff;
+    }
+    input[type="range"].color-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--thumb, #8C735B);
+      cursor: pointer;
+      border: 2px solid #fff;
+    }
   </style>
 </head>
 <body class="min-h-screen p-4 md:p-8 antialiased selection:bg-[#8C735B] selection:text-white">
-  <div class="max-w-6xl mx-auto space-y-8">
+  <div class="max-w-7xl mx-auto space-y-8">
 
     <!-- Header -->
     <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-5">
       <div>
         <h1 class="text-xl font-semibold tracking-tight text-white">Color & Gradient Design Studio</h1>
-        <p class="text-xs text-zinc-400 mt-1">Design translucent ribbon sweeps, 10-step shade scales, and live UI surfaces.</p>
+        <p class="text-xs text-zinc-400 mt-1">Design website colors, surfaces, gradients, and UI elements before implementation.</p>
       </div>
       <div class="flex items-center gap-2">
         <button id="copyAllCssBtn" class="px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-200 transition">Copy Full CSS</button>
@@ -59,7 +85,7 @@
 
     <!-- SECTION 1: GRADIENT COLOR SEQUENCE & LIVE PREVIEW -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div class="lg:col-span-7 bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-6">
+      <div class="lg:col-span-5 bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 class="text-sm font-medium text-white">1. Gradient Color Sequence <span id="slotCounter" class="text-xs text-zinc-400 ml-1">(3/10 slots)</span></h2>
@@ -70,7 +96,7 @@
             <button id="addStopBtn" class="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold transition">+ Add</button>
           </div>
         </div>
-        <div id="stopsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+        <div id="stopsContainer" class="space-y-2"></div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-zinc-800/80">
           <div class="flex items-center justify-between bg-zinc-900/70 px-3.5 py-2.5 rounded-xl border border-zinc-800">
@@ -97,7 +123,7 @@
             <div id="ribbonPresets" class="grid grid-cols-2 gap-1.5"></div>
           </div>
           <div class="space-y-2">
-            <label class="text-xs font-medium text-zinc-400 block">Minimalistic Surface Finish</label>
+            <label class="text-xs font-medium text-zinc-400 block">Surface Finish</label>
             <select id="surfaceFinishSelect" class="w-full px-3 py-2 text-xs bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-200 focus:outline-none">
               <option value="glass">Frosted Glass</option>
               <option value="matte">Matte Dark</option>
@@ -115,39 +141,40 @@
         </div>
       </div>
 
-      <div class="lg:col-span-5 flex flex-col gap-4">
-        <div id="gradientCanvas" class="relative w-full h-80 lg:h-full min-h-[340px] rounded-2xl border border-zinc-800 overflow-hidden flex items-center justify-center p-6 transition-all duration-300 checkerboard">
-          <div id="ribbonLayer" class="absolute inset-0 pointer-events-none transition-all duration-500"></div>
-          <div id="surfaceCard" class="relative z-10 w-full max-w-xs rounded-2xl p-5 transition-all duration-300">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300/80" id="surfaceBadge">Frosted Glass</span>
-              <span class="w-2 h-2 rounded-full bg-emerald-400/80"></span>
-            </div>
-            <h3 class="text-base font-medium text-white">Translucent Surface</h3>
-            <p class="text-xs text-zinc-300/80 mt-1 leading-relaxed">Live interaction between background ribbon sweeps, opacity stops, and surface blur.</p>
-            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-zinc-300/70">
-              <span id="liveFormulaTag">linear-gradient</span>
-              <button id="copyGradientCssBtn" class="text-white underline hover:text-zinc-200">Copy CSS</button>
-            </div>
+      <!-- Bigger Preview + Side Info -->
+      <div class="lg:col-span-7 flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm font-medium text-white">Live Surface Preview</div>
+            <div class="text-xs text-zinc-400">Full website / card / UI surface canvas — text sits alongside, not over the design</div>
           </div>
+          <div class="text-xs font-mono text-zinc-400" id="liveFormulaTag">linear-gradient</div>
+        </div>
+        <div id="gradientCanvas" class="relative w-full min-h-[420px] lg:min-h-[520px] rounded-2xl border border-zinc-800 overflow-hidden transition-all duration-300 checkerboard">
+          <div id="ribbonLayer" class="absolute inset-0 pointer-events-none transition-all duration-500"></div>
+          <div id="surfaceArea" class="absolute inset-0 transition-all duration-300"></div>
+        </div>
+        <div class="flex items-center justify-between text-xs text-zinc-400 bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-2.5">
+          <span id="surfaceBadge">Frosted Glass</span>
+          <button id="copyGradientCssBtn" class="text-white underline hover:text-zinc-200">Copy CSS</button>
         </div>
       </div>
     </section>
 
-    <!-- SECTION 2: BASE COLOR & 5x6 PRESETS -->
+    <!-- SECTION 2: BASE COLOR & FOUNDATIONAL PRESETS -->
     <section class="bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 class="text-sm font-medium text-white">2. Base Color & Studio Presets</h2>
-          <p class="text-xs text-zinc-400">Select any preset or custom base color to generate a 10-step tint-to-shade scale.</p>
+          <h2 class="text-sm font-medium text-white">2. Base Color & Foundational Studio Presets</h2>
+          <p class="text-xs text-zinc-400">Core web design palette — neutrals, primaries, and accents for real interfaces.</p>
         </div>
         <div class="flex items-center gap-2.5 bg-zinc-900 px-3 py-1.5 rounded-xl border border-zinc-800">
           <span class="text-xs text-zinc-400">Base</span>
-          <input type="color" id="baseColorPicker" value="#5C4938" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
-          <input type="text" id="baseColorHex" value="#5C4938" maxlength="7" class="w-20 text-xs font-mono bg-transparent text-white uppercase focus:outline-none" />
+          <input type="color" id="baseColorPicker" value="#3B82F6" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
+          <input type="text" id="baseColorHex" value="#3B82F6" maxlength="7" class="w-20 text-xs font-mono bg-transparent text-white uppercase focus:outline-none" />
         </div>
       </div>
-      <div id="presetGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2"></div>
+      <div id="presetGrid" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2"></div>
     </section>
 
     <!-- SECTION 3: INTERACTIVE TINT-TO-SHADE + COMPONENTS -->
@@ -155,7 +182,7 @@
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 class="text-sm font-medium text-white">3. Interactive Tint-to-Shade Scale (0–9) & UI Component Preview</h2>
-          <p class="text-xs text-zinc-400">Click any shade step to inspect its values, push it to the gradient sequence, or preview UI variants.</p>
+          <p class="text-xs text-zinc-400">Click any shade step to add it to the gradient sequence or inspect values.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2 bg-zinc-900 p-1.5 rounded-xl border border-zinc-800">
           <span class="text-xs text-zinc-400 px-2">Text Color:</span>
@@ -168,8 +195,8 @@
 
       <div class="flex items-center gap-4 flex-wrap">
         <div class="flex-1 min-w-[280px]">
-          <div class="text-xs text-zinc-400 mb-2">Interactive Tint-to-Shade Scale (Click to add to gradient sequence or inspect)</div>
-          <div id="shadeScale" class="flex h-12 rounded-lg overflow-hidden border border-zinc-700"></div>
+          <div class="text-xs text-zinc-400 mb-2">Interactive Tint-to-Shade Scale (Click to add to gradient sequence)</div>
+          <div id="shadeScale" class="flex h-14 rounded-lg overflow-hidden border border-zinc-700"></div>
         </div>
         <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs">
           <div class="text-zinc-400">WCAG Contrast</div>
@@ -215,7 +242,6 @@
   </div>
 
   <script>
-    // --- Data ---
     const patterns = [
       { id: 'linear', label: 'Linear', type: 'linear-gradient' },
       { id: 'radial', label: 'Radial', type: 'radial-gradient' },
@@ -232,18 +258,28 @@
       { id: 'grid', label: 'Grid' },
       { id: 'waves', label: 'Waves' }
     ];
+
+    // Better foundational web design palette
     const presets = [
-      '#0A0A0A','#1A1A1A','#2A2A2A','#3A3A3A','#4A4A4A','#5A5A5A',
-      '#3D3429','#4A3F33','#5C4938','#6B5644','#7A6350','#8C735B',
-      '#2D2A4A','#3D3A6A','#4A47A0','#5A57C0','#6A67E0','#7A77FF',
-      '#1E3A2F','#2A4A3F','#3A6A4F','#4A8A5F','#5AAA6F','#6ACA7F',
-      '#5C3A2A','#6C4A3A','#7C5A4A','#8C6A5A','#9C7A6A','#AC8A7A'
+      // Neutrals
+      '#000000','#111827','#1F2937','#374151','#4B5563','#6B7280',
+      '#9CA3AF','#D1D5DB','#E5E7EB','#F3F4F6','#F9FAFB','#FFFFFF',
+      // Blues
+      '#1E40AF','#1D4ED8','#2563EB','#3B82F6','#60A5FA','#93C5FD',
+      // Greens
+      '#065F46','#047857','#059669','#10B981','#34D399','#6EE7B7',
+      // Reds / Oranges
+      '#991B1B','#B91C1C','#DC2626','#EF4444','#F97316','#FB923C',
+      // Purples / Pinks
+      '#5B21B6','#6D28D9','#7C3AED','#8B5CF6','#EC4899','#F472B6',
+      // Yellows / Ambers
+      '#92400E','#B45309','#D97706','#F59E0B','#FBBF24','#FDE68A'
     ];
 
     let stops = [
-      { hex: '#8C735B', alpha: 100 },
-      { hex: '#3F3F46', alpha: 100 },
-      { hex: '#18181B', alpha: 90 }
+      { hex: '#3B82F6', alpha: 100 },
+      { hex: '#1E293B', alpha: 100 },
+      { hex: '#0F172A', alpha: 90 }
     ];
     let activePattern = patterns[0];
     let activeRibbon = ribbons[0];
@@ -252,17 +288,16 @@
     let blur = 16;
     let tint = 18;
     let surfaceFinish = 'glass';
-    let baseColor = '#5C4938';
+    let baseColor = '#3B82F6';
     let textMode = 'auto';
 
-    // --- DOM ---
     const stopsContainer = document.getElementById('stopsContainer');
     const patternGrid = document.getElementById('patternGrid');
     const ribbonPresets = document.getElementById('ribbonPresets');
     const presetGrid = document.getElementById('presetGrid');
     const shadeScale = document.getElementById('shadeScale');
     const ribbonLayer = document.getElementById('ribbonLayer');
-    const surfaceCard = document.getElementById('surfaceCard');
+    const surfaceArea = document.getElementById('surfaceArea');
     const surfaceBadge = document.getElementById('surfaceBadge');
     const liveFormulaTag = document.getElementById('liveFormulaTag');
     const slotCounter = document.getElementById('slotCounter');
@@ -317,15 +352,19 @@
       stopsContainer.innerHTML = '';
       stops.forEach((s, i) => {
         const el = document.createElement('div');
-        el.className = 'flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-2';
+        el.className = 'flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5';
         el.innerHTML = `
-          <div class="w-5 h-5 rounded" style="background:${s.hex}"></div>
-          <span class="text-xs font-mono text-zinc-300 w-14">${s.hex}</span>
-          <input type="range" min="0" max="100" value="${s.alpha}" data-i="${i}" class="flex-1 h-1" />
-          <span class="text-[11px] text-zinc-500 w-8 text-right">${s.alpha}%</span>
-          <button data-action="up" data-i="${i}" class="text-zinc-500 hover:text-white text-xs px-1">↑</button>
-          <button data-action="down" data-i="${i}" class="text-zinc-500 hover:text-white text-xs px-1">↓</button>
-          <button data-action="del" data-i="${i}" class="text-zinc-500 hover:text-red-400 text-xs px-1">×</button>
+          <div class="w-10 h-10 rounded-lg border border-white/10 flex-shrink-0" style="background:${s.hex}"></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-mono text-zinc-200">${s.hex}</div>
+            <input type="range" min="0" max="100" value="${s.alpha}" data-i="${i}" class="color-slider w-full mt-1" style="--thumb:${s.hex}; accent-color:${s.hex}" />
+          </div>
+          <span class="text-[11px] text-zinc-400 w-8 text-right">${s.alpha}%</span>
+          <div class="flex flex-col gap-0.5">
+            <button data-action="up" data-i="${i}" class="text-zinc-500 hover:text-white text-xs leading-none">↑</button>
+            <button data-action="down" data-i="${i}" class="text-zinc-500 hover:text-white text-xs leading-none">↓</button>
+            <button data-action="del" data-i="${i}" class="text-zinc-500 hover:text-red-400 text-xs leading-none">×</button>
+          </div>
         `;
         stopsContainer.appendChild(el);
       });
@@ -333,8 +372,9 @@
 
       stopsContainer.querySelectorAll('input[type=range]').forEach(sl => {
         sl.addEventListener('input', e => {
-          stops[+e.target.dataset.i].alpha = +e.target.value;
-          e.target.nextElementSibling.textContent = e.target.value + '%';
+          const idx = +e.target.dataset.i;
+          stops[idx].alpha = +e.target.value;
+          e.target.parentElement.nextElementSibling.textContent = e.target.value + '%';
           updatePreview();
         });
       });
@@ -377,7 +417,7 @@
       presetGrid.innerHTML = '';
       presets.forEach(hex => {
         const btn = document.createElement('button');
-        btn.className = 'preset-pill h-8 rounded-lg border border-zinc-700/60';
+        btn.className = 'preset-pill h-9 rounded-lg border border-zinc-700/60';
         btn.style.background = hex;
         btn.title = hex;
         btn.onclick = () => {
@@ -424,7 +464,7 @@
 
     function getRibbonBg() {
       const intensity = 0.4;
-      const base = stops[0] ? hexToRgba(stops[0].hex, Math.round(intensity*50)) : 'rgba(140,115,91,0.25)';
+      const base = stops[0] ? hexToRgba(stops[0].hex, Math.round(intensity*50)) : 'rgba(59,130,246,0.25)';
       switch (activeRibbon.id) {
         case 'diagonal': return `repeating-linear-gradient(45deg, transparent, transparent 10px, ${base} 10px, ${base} 11px)`;
         case 'horizontal': return `repeating-linear-gradient(0deg, transparent, transparent 8px, ${base} 8px, ${base} 9px)`;
@@ -442,18 +482,17 @@
       if (activeRibbon.id === 'dots' || activeRibbon.id === 'grid') ribbonLayer.style.backgroundSize = '14px 14px';
       else ribbonLayer.style.backgroundSize = '';
 
-      surfaceCard.style.background = grad;
-      surfaceCard.style.backdropFilter = `blur(${blur}px)`;
-      surfaceCard.style.backgroundColor = `rgba(255,255,255,${tint/100*0.08})`;
+      surfaceArea.style.background = grad;
+      surfaceArea.style.backdropFilter = `blur(${blur}px)`;
       surfaceBadge.textContent = document.getElementById('surfaceFinishSelect').options[document.getElementById('surfaceFinishSelect').selectedIndex].text;
       liveFormulaTag.textContent = activePattern.type;
 
-      surfaceCard.style.boxShadow = '';
-      surfaceCard.style.border = '1px solid rgba(255,255,255,0.08)';
-      if (surfaceFinish === 'matte') { surfaceCard.style.backdropFilter = 'none'; surfaceCard.style.background = '#18181B'; }
-      if (surfaceFinish === 'acrylic') { surfaceCard.style.boxShadow = '0 8px 32px rgba(0,0,0,0.45)'; }
-      if (surfaceFinish === 'neumorphic') { surfaceCard.style.boxShadow = '6px 6px 12px #0a0a0a, -6px -6px 12px #1c1c1e'; }
-      if (surfaceFinish === 'wireframe') { surfaceCard.style.background = 'transparent'; surfaceCard.style.border = '1px solid rgba(255,255,255,0.25)'; }
+      surfaceArea.style.boxShadow = '';
+      surfaceArea.style.border = 'none';
+      if (surfaceFinish === 'matte') { surfaceArea.style.backdropFilter = 'none'; surfaceArea.style.background = '#18181B'; }
+      if (surfaceFinish === 'acrylic') { surfaceArea.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.08)'; }
+      if (surfaceFinish === 'neumorphic') { surfaceArea.style.boxShadow = 'inset 4px 4px 8px #0a0a0a, inset -4px -4px 8px #1c1c1e'; }
+      if (surfaceFinish === 'wireframe') { surfaceArea.style.background = 'transparent'; surfaceArea.style.border = '1px solid rgba(255,255,255,0.25)'; }
 
       updateComponents();
     }
@@ -476,7 +515,6 @@
       progressBar.style.background = baseColor;
     }
 
-    // --- Events ---
     document.getElementById('addStopBtn').onclick = () => {
       if (stops.length >= 10) return;
       let hex = document.getElementById('newStopHex').value.trim();
