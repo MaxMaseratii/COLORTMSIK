@@ -1,35 +1,418 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Color & Gradient Design Studio</title>
-  <script src="https://tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            obsidian: '#0A0A0A',
-            surface: '#121214',
-            panel: '#18181B',
-            border: '#27272A'
-          }
-        }
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-obsidian: #0A0A0A;
+      --bg-panel: #121214;
+      --bg-card: #18181B;
+      --border-subtle: #27272A;
+      --border-hover: #3F3F46;
+      --text-main: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --accent-taupe: #8C735B;
+    }
+
+    body {
+      background-color: var(--bg-obsidian);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      line-height: 1.5;
+      padding: 24px 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #FFFFFF;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-hover);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .btn-secondary:hover {
+      background: #27272A;
+    }
+
+    .btn-primary {
+      background: #F4F4F5;
+      color: #09090B;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: #FFFFFF;
+    }
+
+    /* Layout Grid */
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (min-width: 960px) {
+      .top-grid {
+        grid-template-columns: 7fr 5fr;
       }
     }
-  </script>
-  <style>
-    body {
-      background-color: #0A0A0A;
-      color: #F4F4F5;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    .section-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Inputs & Controls */
+    .add-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="color"] {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+    }
+
+    .hex-input {
+      width: 84px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-hover);
+      color: #FFFFFF;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      text-transform: uppercase;
+      outline: none;
+    }
+
+    .hex-input:focus {
+      border-color: var(--accent-taupe);
+    }
+
     input[type="range"] {
-      accent-color: #8C735B;
+      accent-color: var(--accent-taupe);
+      cursor: pointer;
+      height: 4px;
+      background: #27272A;
+      border-radius: 4px;
     }
-    .checkerboard {
+
+    select.select-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-hover);
+      color: #FFFFFF;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Gradient Slots */
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+    }
+
+    .slot-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .slot-swatch {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      flex-shrink: 0;
+    }
+
+    .slot-hex {
+      font-size: 12px;
+      font-family: ui-monospace, monospace;
+      color: #E4E4E7;
+      width: 62px;
+    }
+
+    .slot-slider {
+      flex: 1;
+      min-width: 50px;
+    }
+
+    .slot-alpha {
+      font-size: 11px;
+      font-family: ui-monospace, monospace;
+      color: var(--text-muted);
+      width: 34px;
+      text-align: right;
+    }
+
+    .slot-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 5px;
+      font-size: 13px;
+      border-radius: 4px;
+    }
+
+    .icon-btn:hover {
+      color: #FFFFFF;
+      background: #27272A;
+    }
+
+    .icon-btn.danger:hover {
+      color: #F87171;
+    }
+
+    /* Sub-rows */
+    .two-col-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    @media (min-width: 600px) {
+      .two-col-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .control-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Ticker-box Pattern Grid */
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    @media (min-width: 600px) {
+      .pattern-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .ticker-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: #D4D4D8;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+
+    .ticker-btn:hover {
+      border-color: var(--border-hover);
+    }
+
+    .ticker-btn.active {
+      background: #F4F4F5;
+      color: #09090B;
+      border-color: #FFFFFF;
+    }
+
+    .ticker-check {
+      width: 15px;
+      height: 15px;
+      border-radius: 4px;
+      border: 1px solid #52525B;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: transparent;
+    }
+
+    .ticker-btn.active .ticker-check {
+      background: #09090B;
+      border-color: #09090B;
+      color: #FFFFFF;
+    }
+
+    /* Ribbon Presets */
+    .ribbon-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .ribbon-btn {
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .ribbon-btn:hover {
+      color: #FFFFFF;
+    }
+
+    .ribbon-btn.active {
+      background: #27272A;
+      color: #FFFFFF;
+      border-color: #71717A;
+    }
+
+    .mini-sliders {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .mini-sliders input[type="range"] {
+      flex: 1;
+    }
+
+    /* Live Gradient Canvas */
+    .preview-canvas {
+      position: relative;
+      width: 100%;
+      min-height: 360px;
+      height: 100%;
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
       background-image: linear-gradient(45deg, #18181b 25%, transparent 25%),
                         linear-gradient(-45deg, #18181b 25%, transparent 25%),
                         linear-gradient(45deg, transparent 75%, #18181b 75%),
@@ -37,143 +420,49 @@
       background-size: 16px 16px;
       background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
     }
-  </style>
-</head>
-<body class="min-h-screen p-4 md:p-8 antialiased selection:bg-[#8C735B] selection:text-white">
-  <div class="max-w-6xl mx-auto space-y-8">
-    
-    <!-- Header -->
-    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-5">
-      <div>
-        <h1 class="text-xl font-semibold tracking-tight text-white">Color & Gradient Design Studio</h1>
-        <p class="text-xs text-zinc-400 mt-1">Design translucent ribbon sweeps, 10-step shade scales, and live UI surfaces.</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <button id="copyAllCssBtn" class="px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-200 transition flex items-center gap-2">
-          <span>Copy Full CSS</span>
-        </button>
-      </div>
-    </header>
 
-    <!-- SECTION 1: GRADIENT COLOR SEQUENCE & LIVE PREVIEW -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- Left Controls: Sequence, Patterns, Sweeps, Finishes -->
-      <div class="lg:col-span-7 bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-6">
-        
-        <!-- 10-Slot Sequence Header -->
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 class="text-sm font-medium text-white">1. Gradient Color Sequence <span id="slotCounter" class="text-xs text-zinc-400 ml-1">(4/10 slots)</span></h2>
-          </div>
-          <div class="flex items-center gap-2">
-            <input type="color" id="newStopPicker" value="#8C735B" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
-            <input type="text" id="newStopHex" value="#8C735B" maxlength="7" placeholder="#HEX" class="w-24 px-2.5 py-1.5 text-xs bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-200 uppercase focus:outline-none focus:border-zinc-500" />
-            <button id="addStopBtn" class="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold transition">
-              + Add
-            </button>
-          </div>
-        </div>
+    .ribbon-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      transition: background 0.3s ease;
+    }
 
-        <!-- Color Slots List -->
-        <div id="stopsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+    .surface-card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 300px;
+      border-radius: 16px;
+      padding: 20px;
+      transition: all 0.25s ease;
+    }
 
-        <!-- Canvas Background & Orientation Angle -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-zinc-800/80">
-          <div class="flex items-center justify-between bg-zinc-900/70 px-3.5 py-2.5 rounded-xl border border-zinc-800">
-            <span class="text-xs text-zinc-400">Canvas Base</span>
-            <div class="flex items-center gap-2">
-              <span id="canvasBgLabel" class="text-xs font-mono text-zinc-300">#0A0A0A</span>
-              <input type="color" id="canvasBgPicker" value="#0A0A0A" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
-            </div>
-          </div>
-          <div class="flex items-center justify-between gap-3 bg-zinc-900/70 px-3.5 py-2.5 rounded-xl border border-zinc-800">
-            <span class="text-xs text-zinc-400 whitespace-nowrap">Angle: <strong id="angleValue" class="text-zinc-200">135°</strong></span>
-            <input type="range" id="angleSlider" min="0" max="360" value="135" class="w-full h-1.5 bg-zinc-700 rounded-lg cursor-pointer" />
-          </div>
-        </div>
+    .surface-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+      color: rgba(244, 244, 245, 0.75);
+    }
 
-        <!-- Gradient Formula Pattern (Ticker Box Style Selection) -->
-        <div class="space-y-2.5 pt-2">
-          <label class="text-xs font-medium text-zinc-400 block">Gradient Formula Pattern</label>
-          <div id="patternGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
-        </div>
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34D399;
+    }
 
-        <!-- Translucent Ribbon Sweeps & Surface Finish -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-zinc-800/80">
-          <div class="space-y-2">
-            <label class="text-xs font-medium text-zinc-400 block">Translucent Ribbon Sweeps</label>
-            <div id="ribbonPresets" class="grid grid-cols-2 gap-1.5"></div>
-          </div>
-          <div class="space-y-2">
-            <label class="text-xs font-medium text-zinc-400 block">Minimalistic Surface Finish</label>
-            <select id="surfaceFinishSelect" class="w-full px-3 py-2 text-xs bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-200 focus:outline-none">
-              <option value="glass">Frosted Glass</option>
-              <option value="matte">Matte Dark</option>
-              <option value="acrylic">Glossy Acrylic</option>
-              <option value="neumorphic">Neumorphic Soft</option>
-              <option value="wireframe">Hairline Wireframe</option>
-            </select>
-            <div class="flex items-center gap-3 pt-1">
-              <span class="text-[11px] text-zinc-400">Blur <span id="blurVal">16</span>px</span>
-              <input type="range" id="blurSlider" min="0" max="40" value="16" class="w-full h-1 bg-zinc-700 rounded-lg cursor-pointer" />
-              <span class="text-[11px] text-zinc-400">Tint <span id="tintVal">18</span>%</span>
-              <input type="range" id="tintSlider" min="0" max="80" value="18" class="w-full h-1 bg-zinc-700 rounded-lg cursor-pointer" />
-            </div>
-          </div>
-        </div>
-      </div>
+    .surface-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
 
-      <!-- Right Canvas: Live Gradient & Minimalistic Surface Preview -->
-      <div class="lg:col-span-5 flex flex-col gap-4">
-        <div id="gradientCanvas" class="relative w-full h-80 lg:h-full min-h-[340px] rounded-2xl border border-zinc-800 overflow-hidden flex items-center justify-center p-6 transition-all duration-300 checkerboard">
-          <!-- Ribbon Sweep Accent Layer -->
-          <div id="ribbonLayer" class="absolute inset-0 pointer-events-none transition-all duration-500"></div>
-          
-          <!-- Minimalistic Surface Overlay Card -->
-          <div id="surfaceCard" class="relative z-10 w-full max-w-xs rounded-2xl p-5 transition-all duration-300">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300/80" id="surfaceBadge">Frosted Glass</span>
-              <span class="w-2 h-2 rounded-full bg-emerald-400/80"></span>
-            </div>
-            <h3 class="text-base font-medium text-white">Translucent Surface</h3>
-            <p class="text-xs text-zinc-300/80 mt-1 leading-relaxed">
-              Live interaction between background ribbon sweeps, opacity stops, and surface blur.
-            </p>
-            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-zinc-300/70">
-              <span id="liveFormulaTag">conic-gradient</span>
-              <button id="copyGradientCssBtn" class="text-white underline hover:text-zinc-200">Copy CSS</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 2: BASE COLOR & 5x6 PRESETS (30 COLORS) -->
-    <section class="bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-4">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 class="text-sm font-medium text-white">2. Base Color & Studio Presets</h2>
-          <p class="text-xs text-zinc-400">Select any preset or custom base color to generate a 10-step tint-to-shade scale.</p>
-        </div>
-        <div class="flex items-center gap-2.5 bg-zinc-900 px-3 py-1.5 rounded-xl border border-zinc-800">
-          <span class="text-xs text-zinc-400">Base</span>
-          <input type="color" id="baseColorPicker" value="#8C735B" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
-          <input type="text" id="baseColorHex" value="#8C735B" maxlength="7" class="w-20 text-xs font-mono bg-transparent text-white uppercase focus:outline-none" />
-        </div>
-      </div>
-
-      <!-- 5 Rows x 6 Columns = 30 Preset Pills -->
-      <div id="presetGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2"></div>
-    </section>
-
-    <!-- SECTION 3: INTERACTIVE 0-9 TINT-TO-SHADE SCALE & COMPONENT VARIANTS -->
-    <section class="bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-6">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 class="text-sm font-medium text-white">3. Interactive Tint-to-Shade Scale (0–9) & UI Component Preview</h2>
-          <p class="text-xs text-zinc-400">Click any shade step to inspect its values, push it to the gradient sequence, or preview UI variants.</p>
-        </div>
-
-        <!-- Component Text Color Selector -->
-        <div class="flex flex-wrap items-center gap-2 bg-zinc-900 p-1.5 rounded-xl border border-zinc-800">
-          <span class="text-xs text-zinc-400 px-2">Text Color:</span>
+    .surface-card p {
+      font-size: 12px;
+      color: rgba(244, 244, 245, 0.8);
