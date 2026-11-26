@@ -56,7 +56,6 @@
 <body class="min-h-screen p-4 md:p-8 antialiased selection:bg-[#8C735B] selection:text-white">
   <div class="max-w-7xl mx-auto space-y-8">
 
-    <!-- Header -->
     <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-5">
       <div>
         <h1 class="text-xl font-semibold tracking-tight text-white">Color & Gradient Design Studio</h1>
@@ -70,7 +69,6 @@
       </div>
     </header>
 
-    <!-- Example presets -->
     <div class="flex flex-wrap gap-2 items-center">
       <span class="text-xs text-zinc-500">Try:</span>
       <button class="example-preset px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-300 hover:border-zinc-500" data-preset="saas">SaaS Dark</button>
@@ -79,7 +77,6 @@
       <button class="example-preset px-3 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-300 hover:border-zinc-500" data-preset="soft">Soft Pastel</button>
     </div>
 
-    <!-- SECTION 1: GRADIENT + LIVE PREVIEW -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <div class="lg:col-span-5 bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -136,9 +133,8 @@
           </div>
         </div>
 
-        <!-- Text Style Controls -->
         <div class="space-y-3 pt-3 border-t border-zinc-800/80">
-          <label class="text-xs font-medium text-zinc-400 block">Text Style</label>
+          <label class="text-xs font-medium text-zinc-400 block">Text Style <span class="text-zinc-500 font-normal">(click a text in preview first to set its font)</span></label>
           <div class="grid grid-cols-2 gap-2">
             <select id="fontFamilySelect" class="px-2.5 py-1.5 text-xs bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-200 focus:outline-none">
               <option value="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, sans-serif">System</option>
@@ -163,12 +159,11 @@
         </div>
       </div>
 
-      <!-- Preview + mode switcher -->
       <div class="lg:col-span-7 flex flex-col gap-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div class="text-sm font-medium text-white">Live Surface Preview</div>
-            <div class="text-xs text-zinc-400">Switch modes to see the same palette on different UI patterns. Click text to edit.</div>
+            <div class="text-xs text-zinc-400">Click any text to edit it and set its font</div>
           </div>
           <div class="flex gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
             <button data-mode="surface" class="preview-mode-btn px-2.5 py-1 rounded text-[11px] border border-transparent">Surface</button>
@@ -193,7 +188,6 @@
       </div>
     </section>
 
-    <!-- SECTION 2: BASE COLOR & PRESETS -->
     <section class="bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -209,7 +203,6 @@
       <div id="presetGrid" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2"></div>
     </section>
 
-    <!-- SECTION 3: SHADE SCALE + COMPONENTS -->
     <section class="bg-[#121214] border border-zinc-800/90 rounded-2xl p-5 space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -262,7 +255,6 @@
       </div>
     </section>
 
-    <!-- History -->
     <section class="bg-[#121214] border border-zinc-800/90 rounded-2xl p-5">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-sm font-medium text-white">Recent Setups</h2>
@@ -319,18 +311,19 @@
     let fontSize = 16;
     let letterSpacing = 0;
     let previewTexts = {
-      heroTitle: 'Hero Headline',
-      heroSub: 'Subtitle that shows how body text looks on this surface.',
-      heroCta: 'Primary CTA',
-      cardLabel: 'Label',
-      cardTitle: 'Card Title',
-      cardBody: 'Supporting text on the surface.',
-      navLogo: 'Logo',
-      nav1: 'Home',
-      nav2: 'Work',
-      nav3: 'About',
-      badge: 'Studio Badge'
+      heroTitle: { text: 'Hero Headline', font: null },
+      heroSub: { text: 'Subtitle that shows how body text looks on this surface.', font: null },
+      heroCta: { text: 'Primary CTA', font: null },
+      cardLabel: { text: 'Label', font: null },
+      cardTitle: { text: 'Card Title', font: null },
+      cardBody: { text: 'Supporting text on the surface.', font: null },
+      navLogo: { text: 'Logo', font: null },
+      nav1: { text: 'Home', font: null },
+      nav2: { text: 'Work', font: null },
+      nav3: { text: 'About', font: null },
+      badge: { text: 'Studio Badge', font: null }
     };
+    let activeTextKey = null;
     let history = JSON.parse(localStorage.getItem('colorStudioHistory') || '[]');
 
     const stopsContainer = document.getElementById('stopsContainer');
@@ -610,7 +603,6 @@
       const mid = shades[4] || baseColor;
       let textCol = textMode === 'white' ? '#FFFFFF' : textMode === 'black' ? '#000000' : (luminance(mid) > 0.5 ? '#000000' : '#FFFFFF');
       updateContrastFor(mid);
-
       buttonVariants.innerHTML = `
         <button class="px-4 py-2 rounded-full text-xs font-medium" style="background:${baseColor};color:${luminance(baseColor)>0.5?'#000':'#fff'}">Filled</button>
         <button class="px-4 py-2 rounded-full text-xs font-medium bg-zinc-100 text-zinc-900">Light</button>
@@ -623,27 +615,27 @@
     }
     function updateComponentPreview() {
       const textCol = textMode === 'white' ? '#fff' : textMode === 'black' ? '#000' : (luminance(baseColor)>0.5?'#000':'#fff');
-      const style = `font-family:${fontFamily};font-weight:${fontWeight};font-size:${fontSize}px;letter-spacing:${letterSpacing}px;color:${textCol};`;
+      const baseStyle = `font-weight:${fontWeight};font-size:${fontSize}px;letter-spacing:${letterSpacing}px;color:${textCol};`;
       let html = '';
       if (previewMode === 'hero') {
-        html = `<div class="text-center max-w-md" style="${style}">
-          <div contenteditable="true" class="text-2xl mb-2 outline-none" data-key="heroTitle">${previewTexts.heroTitle}</div>
-          <div contenteditable="true" class="text-sm opacity-80 mb-4 outline-none" data-key="heroSub">${previewTexts.heroSub}</div>
-          <button contenteditable="true" class="px-4 py-2 rounded-lg text-xs font-medium outline-none" style="background:${baseColor};color:${luminance(baseColor)>0.5?'#000':'#fff'}" data-key="heroCta">${previewTexts.heroCta}</button>
+        html = `<div class="text-center max-w-md">
+          <div contenteditable="true" class="text-2xl mb-2 outline-none" data-key="heroTitle" style="${baseStyle}font-family:${previewTexts.heroTitle.font || fontFamily}">${previewTexts.heroTitle.text}</div>
+          <div contenteditable="true" class="text-sm opacity-80 mb-4 outline-none" data-key="heroSub" style="${baseStyle}font-family:${previewTexts.heroSub.font || fontFamily}">${previewTexts.heroSub.text}</div>
+          <button contenteditable="true" class="px-4 py-2 rounded-lg text-xs font-medium outline-none" style="background:${baseColor};color:${luminance(baseColor)>0.5?'#000':'#fff'};${baseStyle}font-family:${previewTexts.heroCta.font || fontFamily}" data-key="heroCta">${previewTexts.heroCta.text}</button>
         </div>`;
       } else if (previewMode === 'card') {
-        html = `<div class="bg-black/20 backdrop-blur rounded-xl p-4 max-w-xs border border-white/10" style="${style}">
-          <div contenteditable="true" class="text-[10px] uppercase tracking-wider mb-1 opacity-70 outline-none" data-key="cardLabel">${previewTexts.cardLabel}</div>
-          <div contenteditable="true" class="font-medium mb-1 outline-none" data-key="cardTitle">${previewTexts.cardTitle}</div>
-          <div contenteditable="true" class="text-xs opacity-80 outline-none" data-key="cardBody">${previewTexts.cardBody}</div>
+        html = `<div class="bg-black/20 backdrop-blur rounded-xl p-4 max-w-xs border border-white/10">
+          <div contenteditable="true" class="text-[10px] uppercase tracking-wider mb-1 opacity-70 outline-none" data-key="cardLabel" style="${baseStyle}font-family:${previewTexts.cardLabel.font || fontFamily}">${previewTexts.cardLabel.text}</div>
+          <div contenteditable="true" class="font-medium mb-1 outline-none" data-key="cardTitle" style="${baseStyle}font-family:${previewTexts.cardTitle.font || fontFamily}">${previewTexts.cardTitle.text}</div>
+          <div contenteditable="true" class="text-xs opacity-80 outline-none" data-key="cardBody" style="${baseStyle}font-family:${previewTexts.cardBody.font || fontFamily}">${previewTexts.cardBody.text}</div>
         </div>`;
       } else if (previewMode === 'nav') {
-        html = `<div class="absolute top-4 left-4 right-4 flex items-center justify-between px-4 py-2 rounded-lg bg-black/30 backdrop-blur border border-white/10" style="${style}">
-          <span contenteditable="true" class="text-sm font-medium outline-none" data-key="navLogo">${previewTexts.navLogo}</span>
+        html = `<div class="absolute top-4 left-4 right-4 flex items-center justify-between px-4 py-2 rounded-lg bg-black/30 backdrop-blur border border-white/10">
+          <span contenteditable="true" class="text-sm font-medium outline-none" data-key="navLogo" style="${baseStyle}font-family:${previewTexts.navLogo.font || fontFamily}">${previewTexts.navLogo.text}</span>
           <div class="flex gap-3 text-xs">
-            <span contenteditable="true" class="outline-none" data-key="nav1">${previewTexts.nav1}</span>
-            <span contenteditable="true" class="outline-none" data-key="nav2">${previewTexts.nav2}</span>
-            <span contenteditable="true" class="outline-none" data-key="nav3">${previewTexts.nav3}</span>
+            <span contenteditable="true" class="outline-none" data-key="nav1" style="${baseStyle}font-family:${previewTexts.nav1.font || fontFamily}">${previewTexts.nav1.text}</span>
+            <span contenteditable="true" class="outline-none" data-key="nav2" style="${baseStyle}font-family:${previewTexts.nav2.font || fontFamily}">${previewTexts.nav2.text}</span>
+            <span contenteditable="true" class="outline-none" data-key="nav3" style="${baseStyle}font-family:${previewTexts.nav3.font || fontFamily}">${previewTexts.nav3.text}</span>
           </div>
         </div>`;
       } else if (previewMode === 'buttons') {
@@ -653,10 +645,15 @@
       componentPreview.style.pointerEvents = previewMode === 'surface' ? 'none' : 'auto';
 
       componentPreview.querySelectorAll('[contenteditable]').forEach(el => {
+        el.onfocus = () => {
+          activeTextKey = el.dataset.key;
+          const currentFont = previewTexts[activeTextKey]?.font || fontFamily;
+          document.getElementById('fontFamilySelect').value = currentFont;
+        };
         el.oninput = () => {
           const key = el.dataset.key;
-          if (key && previewTexts.hasOwnProperty(key)) {
-            previewTexts[key] = el.innerText.trim();
+          if (key && previewTexts[key]) {
+            previewTexts[key].text = el.innerText.trim();
             updateHash();
           }
         };
@@ -684,7 +681,6 @@
       renderStops(); renderPatterns(); renderRibbons(); renderPresets(); renderShadeScale(); renderHistory(); updatePreview();
     }
 
-    // Events
     document.getElementById('addStopBtn').onclick = () => {
       if (stops.length >= 10) return;
       let hex = document.getElementById('newStopHex').value.trim();
@@ -703,7 +699,16 @@
     document.getElementById('blurSlider').oninput = e => { blur = +e.target.value; blurVal.textContent = blur; updatePreview(); };
     document.getElementById('tintSlider').oninput = e => { tint = +e.target.value; tintVal.textContent = tint; updatePreview(); };
     document.getElementById('surfaceFinishSelect').onchange = e => { surfaceFinish = e.target.value; updatePreview(); };
-    document.getElementById('fontFamilySelect').onchange = e => { fontFamily = e.target.value; updateComponentPreview(); updateHash(); };
+    document.getElementById('fontFamilySelect').onchange = e => {
+      const newFont = e.target.value;
+      if (activeTextKey && previewTexts[activeTextKey]) {
+        previewTexts[activeTextKey].font = newFont;
+      } else {
+        fontFamily = newFont;
+      }
+      updateComponentPreview();
+      updateHash();
+    };
     document.getElementById('fontWeightSelect').onchange = e => { fontWeight = e.target.value; updateComponentPreview(); updateHash(); };
     document.getElementById('fontSizeSlider').oninput = e => { fontSize = +e.target.value; document.getElementById('fontSizeVal').textContent = fontSize; updateComponentPreview(); updateHash(); };
     document.getElementById('trackingSlider').oninput = e => { letterSpacing = +e.target.value; document.getElementById('trackingVal').textContent = letterSpacing; updateComponentPreview(); updateHash(); };
@@ -779,11 +784,14 @@
       renderHistory();
     };
     document.getElementById('mockBadge')?.addEventListener('input', e => {
-      previewTexts.badge = e.target.innerText.trim();
+      if (previewTexts.badge) previewTexts.badge.text = e.target.innerText.trim();
       updateHash();
     });
+    document.getElementById('mockBadge')?.addEventListener('focus', () => {
+      activeTextKey = 'badge';
+      document.getElementById('fontFamilySelect').value = previewTexts.badge.font || fontFamily;
+    });
 
-    // Init
     document.querySelector('[data-mode="surface"]').classList.add('active');
     if (!loadFromHash()) renderAll();
     else renderAll();
